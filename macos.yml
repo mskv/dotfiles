@@ -29,17 +29,25 @@
         name: core.excludesfile
         value: /Users/{{ ansible_user }}/.global_gitignore
 
+    - name: Install tig
+      homebrew:
+        name: tig
+        state: latest
+
+
+    - name: Create the ~/sources directory
+      file: 
+        path: /Users/{{ ansible_user }}/sources
+        state: directory
+
+
+
     - name: Install zsh
       homebrew:
         name:
           - zsh
           - zsh-completions
         state: latest
-
-    - name: Create the ~/sources directory
-      file: 
-        path: /Users/{{ ansible_user }}/sources
-        state: directory
 
     - name: Clone oh-my-zsh
       git: 
@@ -73,10 +81,47 @@
       when: not lookup('env', 'SHELL') == '/bin/zsh'
       command: chsh -s /bin/zsh
 
+
+
     - name: Install tmux
       homebrew:
         name: tmux
         state: latest
+
+    - name: Clone tpm
+      git: 
+        repo: https://github.com/tmux-plugins/tpm.git
+        dest: /Users/{{ ansible_user }}/sources/tpm
+        update: no
+
+    - name: Create the ~/.tmux/plugins directory
+      file: 
+        path: /Users/{{ ansible_user }}/.tmux/plugins
+        state: directory
+
+    - name: Symlink tpm
+      file: 
+        path: /Users/{{ ansible_user }}/.tmux/plugins/tpm
+        src: /Users/{{ ansible_user }}/sources/tpm
+        state: link
+
+    - name: Register existant .tmux.conf
+      stat: path=/Users/{{ ansible_user }}/.tmux.conf
+      register: existant_tmux_conf
+
+    - name: Optionally backup .tmux.conf
+      when: existant_tmux_conf.stat.exists
+      copy: 
+        src: /Users/{{ ansible_user }}/.tmux.conf
+        dest: /Users/{{ ansible_user }}/.tmux.conf-backup
+
+    - name: Copy .tmux.conf
+      copy:
+        src: ./.tmux.conf
+        dest: /Users/{{ ansible_user }}/.tmux.conf
+        force: yes
+
+
 
     - name: Tap caskroom/cask
       homebrew_tap:
