@@ -10,4 +10,9 @@ plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
+### asdf
+
+. $(brew --prefix asdf)/asdf.sh
+. $(brew --prefix asdf)/etc/bash_completion.d/asdf.bash
+
 ### ###
