@@ -171,3 +171,8 @@
       homebrew_cask:
         name: slack
         state: installed
+
+    - name: Install Docker
+      homebrew_cask:
+        name: docker
+        state: installed
