@@ -1,0 +1,5 @@
+- get `brew`
+- `brew install ansible`
+- `brew install git`
+- clone this repo
+- `ansible-playbook macos.yml`

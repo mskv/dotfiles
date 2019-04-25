@@ -1,0 +1,104 @@
+---
+- name: MacOS setup
+  hosts: local
+  tasks:
+
+    - name: Set git name
+      git_config:
+        name: user.name
+        value: Michał Podwórny
+
+    - name: Set git email
+      git_config:
+        name: user.email
+        value: podworny.m@gmail.com
+
+    - name: Set git editor
+      git_config:
+        name: core.editor
+        value: code
+
+    - name: Copy git global ignore
+      copy:
+        src: ./.global_gitignore
+        dest: /Users/{{ ansible_user }}/.global_gitignore
+        force: yes
+
+    - name: Set git global ignore
+      git_config:
+        name: core.excludesfile
+        value: /Users/{{ ansible_user }}/.global_gitignore
+
+    - name: Install zsh
+      homebrew:
+        name:
+          - zsh
+          - zsh-completions
+        state: latest
+
+    - name: Create the ~/sources directory
+      file: 
+        path: /Users/{{ ansible_user }}/sources
+        state: directory
+
+    - name: Clone oh-my-zsh
+      git: 
+        repo: https://github.com/robbyrussell/oh-my-zsh.git
+        dest: /Users/{{ ansible_user }}/sources/oh-my-zsh
+        update: no
+
+    - name: Symlink .oh-my-zsh
+      file: 
+        path: /Users/{{ ansible_user }}/.oh-my-zsh
+        src: /Users/{{ ansible_user }}/sources/oh-my-zsh
+        state: link
+
+    - name: Register existant .zshrc
+      stat: path=/Users/{{ ansible_user }}/.zshrc
+      register: existant_zshrc
+
+    - name: Optionally backup .zshrc
+      when: existant_zshrc.stat.exists
+      copy: 
+        src: /Users/{{ ansible_user }}/.zshrc
+        dest: /Users/{{ ansible_user }}/.zshrc-backup
+
+    - name: Copy .zshrc
+      copy:
+        src: ./.zshrc
+        dest: /Users/{{ ansible_user }}/.zshrc
+        force: yes
+
+    - name: Optionally change shell to zsh
+      when: not lookup('env', 'SHELL') == '/bin/zsh'
+      command: chsh -s /bin/zsh
+
+    - name: Install tmux
+      homebrew:
+        name: tmux
+        state: latest
+
+    - name: Tap caskroom/cask
+      homebrew_tap:
+        name: caskroom/cask
+        state: present
+
+    - name: Install Karabiner
+      homebrew_cask:
+        name: karabiner-elements
+        state: installed
+
+    - name: Install VSCode
+      homebrew_cask:
+        name: visual-studio-code
+        state: installed
+
+    - name: Install Chrome
+      homebrew_cask:
+        name: google-chrome
+        state: installed
+
+    - name: Install Slack
+      homebrew_cask:
+        name: slack
+        state: installed
