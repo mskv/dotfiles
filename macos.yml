@@ -62,12 +62,12 @@
         src: /Users/{{ ansible_user }}/sources/oh-my-zsh
         state: link
 
-    - name: Register existant .zshrc
+    - name: Register existent .zshrc
       stat: path=/Users/{{ ansible_user }}/.zshrc
-      register: existant_zshrc
+      register: existent_zshrc
 
     - name: Optionally backup .zshrc
-      when: existant_zshrc.stat.exists
+      when: existent_zshrc.stat.exists
       copy:
         src: /Users/{{ ansible_user }}/.zshrc
         dest: /Users/{{ ansible_user }}/.zshrc-backup
@@ -106,12 +106,12 @@
         src: /Users/{{ ansible_user }}/sources/tpm
         state: link
 
-    - name: Register existant .tmux.conf
+    - name: Register existent .tmux.conf
       stat: path=/Users/{{ ansible_user }}/.tmux.conf
-      register: existant_tmux_conf
+      register: existent_tmux_conf
 
     - name: Optionally backup .tmux.conf
-      when: existant_tmux_conf.stat.exists
+      when: existent_tmux_conf.stat.exists
       copy:
         src: /Users/{{ ansible_user }}/.tmux.conf
         dest: /Users/{{ ansible_user }}/.tmux.conf-backup
