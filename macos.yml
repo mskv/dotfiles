@@ -3,6 +3,12 @@
   hosts: local
   tasks:
 
+    # - name: Print all available facts
+    #   ansible.builtin.debug:
+    #     var: ansible_facts
+
+
+
     - name: Set git name
       git_config:
         name: user.name
@@ -21,13 +27,13 @@
     - name: Copy git global ignore
       copy:
         src: ./.global_gitignore
-        dest: /Users/{{ ansible_user }}/.global_gitignore
+        dest: '{{ ansible_facts.user_dir }}/.global_gitignore'
         force: yes
 
     - name: Set git global ignore
       git_config:
         name: core.excludesfile
-        value: /Users/{{ ansible_user }}/.global_gitignore
+        value: '{{ ansible_facts.user_dir }}/.global_gitignore'
 
     - name: Install tig
       homebrew:
@@ -38,7 +44,12 @@
 
     - name: Create the ~/sources directory
       file:
-        path: /Users/{{ ansible_user }}/sources
+        path: '{{ ansible_facts.user_dir }}/sources'
+        state: directory
+
+    - name: Create the ~/.config directory
+      file:
+        path: '{{ ansible_facts.user_dir }}/.config'
         state: directory
 
 
@@ -53,34 +64,47 @@
     - name: Clone oh-my-zsh
       git:
         repo: https://github.com/robbyrussell/oh-my-zsh.git
-        dest: /Users/{{ ansible_user }}/sources/oh-my-zsh
+        dest: '{{ ansible_facts.user_dir }}/sources/oh-my-zsh'
         update: no
 
     - name: Symlink .oh-my-zsh
       file:
-        path: /Users/{{ ansible_user }}/.oh-my-zsh
-        src: /Users/{{ ansible_user }}/sources/oh-my-zsh
+        path: '{{ ansible_facts.user_dir }}/.oh-my-zsh'
+        src: '{{ ansible_facts.user_dir }}/sources/oh-my-zsh'
         state: link
 
     - name: Register existent .zshrc
-      stat: path=/Users/{{ ansible_user }}/.zshrc
+      stat: path=/{{ ansible_facts.user_dir }}/.zshrc
       register: existent_zshrc
 
     - name: Optionally backup .zshrc
       when: existent_zshrc.stat.exists
       copy:
-        src: /Users/{{ ansible_user }}/.zshrc
-        dest: /Users/{{ ansible_user }}/.zshrc-backup
+        src: '{{ ansible_facts.user_dir }}/.zshrc'
+        dest: '{{ ansible_facts.user_dir }}/.zshrc-backup'
 
     - name: Copy .zshrc
       copy:
         src: ./.zshrc
-        dest: /Users/{{ ansible_user }}/.zshrc
+        dest: '{{ ansible_facts.user_dir }}/.zshrc'
         force: yes
 
     - name: Optionally change shell to zsh
       when: not lookup('env', 'SHELL') == '/bin/zsh'
       command: chsh -s /bin/zsh
+
+
+
+    - name: Create the ~/.config/karabiner directory
+      file:
+        path: '{{ ansible_facts.user_dir }}/.config/karabiner'
+        state: directory
+
+    - name: Copy karabiner.json
+      copy:
+        src: ./karabiner.json
+        dest: '{{ ansible_facts.user_dir }}/.config/karabiner/karabiner.json'
+        force: yes
 
 
 
@@ -92,34 +116,34 @@
     - name: Clone tpm
       git:
         repo: https://github.com/tmux-plugins/tpm.git
-        dest: /Users/{{ ansible_user }}/sources/tpm
+        dest: '{{ ansible_facts.user_dir }}/sources/tpm'
         update: no
 
     - name: Create the ~/.tmux/plugins directory
       file:
-        path: /Users/{{ ansible_user }}/.tmux/plugins
+        path: '{{ ansible_facts.user_dir }}/.tmux/plugins'
         state: directory
 
     - name: Symlink tpm
       file:
-        path: /Users/{{ ansible_user }}/.tmux/plugins/tpm
-        src: /Users/{{ ansible_user }}/sources/tpm
+        path: '{{ ansible_facts.user_dir }}/.tmux/plugins/tpm'
+        src: '{{ ansible_facts.user_dir }}/sources/tpm'
         state: link
 
     - name: Register existent .tmux.conf
-      stat: path=/Users/{{ ansible_user }}/.tmux.conf
+      stat: path=/{{ ansible_facts.user_dir }}/.tmux.conf
       register: existent_tmux_conf
 
     - name: Optionally backup .tmux.conf
       when: existent_tmux_conf.stat.exists
       copy:
-        src: /Users/{{ ansible_user }}/.tmux.conf
-        dest: /Users/{{ ansible_user }}/.tmux.conf-backup
+        src: '{{ ansible_facts.user_dir }}/.tmux.conf'
+        dest: '{{ ansible_facts.user_dir }}/.tmux.conf-backup'
 
     - name: Copy .tmux.conf
       copy:
         src: ./.tmux.conf
-        dest: /Users/{{ ansible_user }}/.tmux.conf
+        dest: '{{ ansible_facts.user_dir }}/.tmux.conf'
         force: yes
 
 
@@ -147,9 +171,9 @@
 
 
 
-    - name: Tap caskroom/cask
+    - name: Tap homebrew/cask
       homebrew_tap:
-        name: caskroom/cask
+        name: homebrew/cask
         state: present
 
     - name: Install Karabiner
