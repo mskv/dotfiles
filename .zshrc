@@ -10,6 +10,8 @@ plugins=(git docker docker-compose)
 
 source $ZSH/oh-my-zsh.sh
 
+unsetopt correct_all
+
 ### asdf
 
 . $(brew --prefix asdf)/asdf.sh
